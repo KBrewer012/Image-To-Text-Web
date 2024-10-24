@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Text Scanner</title>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            background-image: url('https://www.pixground.com/wp-content/uploads/2023/07/Abstract-Gradient-Blue-Layers-AI-Generated-4K-Wallpaper.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 400px;
+            padding: 20px;
+            border-radius: 10px;
+            background: rgba(155, 155, 155, 0.07);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(6.5px);
+            -webkit-backdrop-filter: blur(6.5px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .container:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            margin-bottom: 20px;
+            color: #f0f0f0;
+            text-shadow: 0 0 10px rgba(240, 240, 240, 0.8), 0 0 20px rgba(240, 240, 240, 0.5);
+        }
+        #drop-area {
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            padding: 50px;
+            margin: 20px auto;
+            background-color: rgba(45, 45, 45, 0.7);
+            transition: background-color 0.3s;
+            color: #f0f0f0;
+            text-align: center;
+            cursor: pointer;
+        }
+        #drop-area.hover {
+            background-color: rgba(58, 58, 58, 0.9);
+        }
+        #loading {
+            display: none;
+            margin-top: 20px;
+            color: #f0f0f0;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: rgba(61, 61, 61, 0.7);
+            border-radius: 5px;
+            min-height: 100px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+            color: #f0f0f0;
+            transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #0078d4;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #005a9e;
+        }
+        footer {
+            margin-top: 20px;
+            color: #f0f0f0;
+            text-align: center;
+            font-size: 14px;
+        }
+        .info-icon {
+            cursor: pointer;
+            margin-left: 5px;
+            color: #0078d4;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Image to Text Scanner</h1>
+
+        <div id="drop-area">
+            <p>Drag and drop an image here or click to upload to get started!</p>
+            <input type="file" id="file-input" accept="image/*" style="display: none;">
+        </div>
+        <div id="loading">Processing image, please wait...</div>
+        
+        <button id="copy-button" style="display: none;">Copy Text</button>
+        
+        <div id="output" style="max-height: 0; opacity: 0;">
+        </div>
+    </div>
+
+    <footer>
+        <p>Made by Khris. All rights reserved. 
+            <span class="info-icon" title="All rights reserved means that the creator retains all legal rights to the work.">ℹ️</span>
+        </p>
+    </footer>
+
+    <script>
+        const dropArea = document.getElementById('drop-area');
+        const fileInput = document.getElementById('file-input');
+        const loading = document.getElementById('loading');
+        const output = document.getElementById('output');
+        const copyButton = document.getElementById('copy-button');
+
+        dropArea.addEventListener('click', () => fileInput.click());
+        dropArea.addEventListener('dragover', (event) => {
+            event.preventDefault();
+            dropArea.classList.add('hover');
+        });
+        dropArea.addEventListener('dragleave', () => dropArea.classList.remove('hover'));
+        dropArea.addEventListener('drop', handleFileDrop);
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) processImage(file);
+        });
+
+        function handleFileDrop(event) {
+            event.preventDefault();
+            dropArea.classList.remove('hover');
+            const files = event.dataTransfer.files;
+            if (files.length > 0) processImage(files[0]);
+        }
+
+        function processImage(file) {
+            loading.style.display = 'block';
+            output.innerText = '';
+            copyButton.style.display = 'none';
+            output.style.maxHeight = '0'; 
+            output.style.opacity = '0'; 
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.src = e.target.result;
+
+                img.onload = function() {
+                    Tesseract.recognize(img, 'eng', {
+                        logger: console.log,
+                        // Improved accuracy settings
+                        tessedit_char_whitelist: '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
+                        tessedit_pageseg_mode: Tesseract.PSM.AUTO,
+                        preserve_interword_spaces: 1,
+                        // Additional parameters for better accuracy
+                        tessedit_diacritics: 1,
+                        tessedit_enable_dict: true,
+                        tessedit_use_new_state_cost: 1,
+                    })
+                    .then(result => {
+                        loading.style.display = 'none';
+                        const text = result.data.text.trim();
+                        if (text) {
+                            output.innerText = text;
+                            output.style.display = 'block';
+                            output.style.maxHeight = '200px'; 
+                            output.style.opacity = '1'; 
+                            copyButton.style.display = 'inline-block';
+                        } else {
+                            output.style.display = 'none'; 
+                        }
+                    })
+                    .catch(error => {
+                        loading.style.display = 'none';
+                        output.innerText = 'Error: ' + error.message;
+                        output.style.display = 'block'; 
+                        output.style.maxHeight = '200px'; 
+                        output.style.opacity = '1'; 
+                    });
+                };
+            };
+
+            reader.readAsDataURL(file);
+        }
+
+        copyButton.addEventListener('click', () => {
+            const text = output.innerText;
+            if (text) {
+                navigator.clipboard.writeText(text)
+                    .then(() => alert('Text copied to clipboard!'))
+                    .catch(err => console.error('Error copying text: ', err));
+            }
+        });
+    </script>
+
+</body>
+</html>
