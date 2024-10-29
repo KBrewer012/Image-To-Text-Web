@@ -7,16 +7,17 @@
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Courier New', Courier, monospace;
             margin: 0;
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             flex-direction: column;
-            background-image: url('https://www.pixground.com/wp-content/uploads/2023/07/Abstract-Gradient-Blue-Layers-AI-Generated-4K-Wallpaper.jpg');
+            background-image: url('https://images.unsplash.com/photo-1653916893491-ae4043177a38?q=80&w=1931&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
             background-size: cover;
             background-position: center;
+            filter: brightness(0.8);
         }
         .container {
             display: flex;
@@ -24,72 +25,73 @@
             align-items: center;
             width: 400px;
             padding: 20px;
-            border-radius: 10px;
-            background: rgba(155, 155, 155, 0.07);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(6.5px);
-            -webkit-backdrop-filter: blur(6.5px);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            transition: transform 0.3s, box-shadow 0.3s;
+            border: 2px solid #000;
+            background-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+            transition: transform 0.3s;
         }
         .container:hover {
-            transform: translateY(-10px) scale(1.02);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            transform: translateY(-2px);
         }
         h1 {
             margin-bottom: 20px;
-            color: #f0f0f0;
-            text-shadow: 0 0 10px rgba(240, 240, 240, 0.8), 0 0 20px rgba(240, 240, 240, 0.5);
+            color: #000;
+            text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.5);
+            font-size: 24px;
+            text-align: center;
         }
         #drop-area {
-            border: 2px dashed #ccc;
-            border-radius: 10px;
+            border: 2px dashed #000;
+            border-radius: 5px;
             padding: 50px;
             margin: 20px auto;
-            background-color: rgba(45, 45, 45, 0.7);
+            background-color: rgba(200, 200, 200, 0.9);
             transition: background-color 0.3s;
-            color: #f0f0f0;
+            color: #000;
             text-align: center;
             cursor: pointer;
         }
         #drop-area.hover {
-            background-color: rgba(58, 58, 58, 0.9);
+            background-color: rgba(230, 230, 230, 0.9);
         }
         #loading {
             display: none;
             margin-top: 20px;
-            color: #f0f0f0;
+            color: #000;
         }
         #output {
             margin-top: 20px;
-            padding: 20px;
-            background-color: rgba(61, 61, 61, 0.7);
+            padding: 10px;
+            background-color: rgba(180, 180, 180, 0.9);
+            border: 1px solid #000;
             border-radius: 5px;
             min-height: 100px;
             max-height: 200px;
             overflow-y: auto;
             display: none;
-            color: #f0f0f0;
+            color: #000;
             transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out;
         }
         button {
             margin-top: 10px;
             padding: 10px 20px;
-            background-color: #0078d4;
+            background-color: #000;
             color: #ffffff;
-            border: none;
+            border: 2px solid #000;
             border-radius: 5px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: background-color 0.3s, transform 0.2s;
         }
         button:hover {
-            background-color: #005a9e;
+            background-color: #444;
+            transform: scale(1.05);
         }
         footer {
             margin-top: 20px;
-            color: #f0f0f0;
+            color: #000;
             text-align: center;
-            font-size: 14px;
+            font-size: 12px;
         }
         .info-icon {
             cursor: pointer;
@@ -109,10 +111,10 @@
         </div>
         <div id="loading">Processing image, please wait...</div>
         
-        <button id="copy-button" style="display: none;">Copy Text</button>
-        
         <div id="output" style="max-height: 0; opacity: 0;">
         </div>
+        
+        <button id="copy-button" style="display: none;">Copy Text</button>
     </div>
 
     <footer>
@@ -140,7 +142,6 @@
             if (file) processImage(file);
         });
 
-        // Function to handle pasting from the clipboard
         document.addEventListener('paste', (event) => {
             const items = (event.clipboardData || window.clipboardData).items;
             for (const item of items) {
