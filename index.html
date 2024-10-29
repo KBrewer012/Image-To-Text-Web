@@ -104,7 +104,7 @@
         <h1>Image to Text Scanner</h1>
 
         <div id="drop-area">
-            <p>Drag and drop an image here or click to upload to get started!</p>
+            <p>Drag and drop an image here, click to upload, or paste from your clipboard to get started!</p>
             <input type="file" id="file-input" accept="image/*" style="display: none;">
         </div>
         <div id="loading">Processing image, please wait...</div>
@@ -140,6 +140,17 @@
             if (file) processImage(file);
         });
 
+        // Function to handle pasting from the clipboard
+        document.addEventListener('paste', (event) => {
+            const items = (event.clipboardData || window.clipboardData).items;
+            for (const item of items) {
+                if (item.kind === 'file') {
+                    const file = item.getAsFile();
+                    processImage(file);
+                }
+            }
+        });
+
         function handleFileDrop(event) {
             event.preventDefault();
             dropArea.classList.remove('hover');
@@ -162,11 +173,9 @@
                 img.onload = function() {
                     Tesseract.recognize(img, 'eng', {
                         logger: console.log,
-                        // Improved accuracy settings
                         tessedit_char_whitelist: '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
                         tessedit_pageseg_mode: Tesseract.PSM.AUTO,
                         preserve_interword_spaces: 1,
-                        // Additional parameters for better accuracy
                         tessedit_diacritics: 1,
                         tessedit_enable_dict: true,
                         tessedit_use_new_state_cost: 1,
