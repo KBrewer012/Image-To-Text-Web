@@ -183,8 +183,11 @@
                     })
                     .then(result => {
                         loading.style.display = 'none';
-                        const text = result.data.text.trim();
+                        let text = result.data.text.trim();
+
                         if (text) {
+                            // Simple approach to enhance school-related questions, format questions to make them more readable
+                            text = text.replace(/(\?)/g, '$1\n'); // Add line breaks after questions
                             output.innerText = text;
                             output.style.display = 'block';
                             output.style.maxHeight = '200px'; 
